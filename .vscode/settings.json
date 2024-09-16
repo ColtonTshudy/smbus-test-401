@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        ".clang-format": "yaml",
+        "epd_test.h": "c",
+        "epd_4in2_v2.h": "c",
+        "main.h": "c",
+        "type_traits": "c",
+        "program.h": "c",
+        "gui_paint.h": "c",
+        "debug.h": "c",
+        "dev_config.h": "c",
+        "usb_device.h": "c",
+        "usbd_cdc_if.h": "c"
+    }
+}
