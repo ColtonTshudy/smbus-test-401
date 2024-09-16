@@ -27,7 +27,7 @@ def connect_and_monitor():
             except serial.SerialException as e:
                 print(f"Failed to connect: {e}")
         else:
-            print("USB Serial Device not found. Retrying...")
+            pass
         
         time.sleep(0.01)  # Wait for 10ms before trying to reconnect
 
