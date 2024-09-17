@@ -10,6 +10,7 @@
         "debug.h": "c",
         "dev_config.h": "c",
         "usb_device.h": "c",
-        "usbd_cdc_if.h": "c"
+        "usbd_cdc_if.h": "c",
+        "smbus.h": "c"
     }
 }

@@ -51,6 +51,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     ${CMAKE_HOME_DIRECTORY}/Core/Src/program.c
+    ${CMAKE_HOME_DIRECTORY}/Core/Src/smbus.c
 )
 
 # Add include paths

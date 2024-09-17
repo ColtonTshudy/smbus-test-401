@@ -7,7 +7,6 @@
             "executable": "${workspaceFolder}/build/Debug/${workspaceFolderBasename}.elf",
             "request": "launch",
             "type": "cortex-debug",
-            "runToEntryPoint": "main",
             "servertype": "openocd",
             "device": "STM32F401CCU6",
             "configFiles": [

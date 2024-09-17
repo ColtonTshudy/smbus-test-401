@@ -1,71 +1,17 @@
 #include "program.h"
+#include "smbus.h"
 
 uint8_t key = 0;
-uint8_t state = 0;
-extern SMBUS_HandleTypeDef hsmbus1;
+extern I2C_HandleTypeDef hi2c1;
 
 uint8_t tx_data[2] = {0, 0};
 uint8_t rx_data[2] = {0, 0};
 
-uint32_t entryTime = 0;
+uint16_t charge_mv = 0;
 
 void setup()
 {
-    if (HAL_SMBUS_IsDeviceReady(&hsmbus1, ADDRESS, 20, 1000) != HAL_OK)
-    {
-        HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
-    }
-}
-
-void smbusReinit()
-{
-    __HAL_SMBUS_DISABLE(&hsmbus1);
-    __HAL_SMBUS_CLEAR_FLAG(&hsmbus1, SMBUS_FLAG_BERR | SMBUS_FLAG_ARLO | SMBUS_FLAG_AF | SMBUS_FLAG_OVR);
-    hsmbus1.State = HAL_SMBUS_STATE_READY; // Reset the state manually
-    HAL_SMBUS_Init(&hsmbus1);              // Reinitialize the SMBUS peripheral
-}
-
-void smbusBusyCheck()
-{
-    entryTime = HAL_GetTick();
-    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
-    while (HAL_SMBUS_GetState(&hsmbus1) != HAL_SMBUS_STATE_READY)
-    {
-        // if (entryTime - HAL_GetTick() > 1000)
-        // {
-        //     smbusReinit();
-        //     break;
-        // }
-    }
-    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
-}
-
-void smbusSendCommand()
-{
-    Debug("=====================================");
-    Debug("SMBus transmitting...");
-    tx_data[0] = 0x14;
-    HAL_StatusTypeDef rc = 0;
-    rc = HAL_SMBUS_Master_Transmit_IT(&hsmbus1, ADDRESS, &(tx_data[0]), 1, SMBUS_FIRST_FRAME);
-    if (rc != HAL_OK)
-    {
-        Debug("Failed to transmit smbus");
-    }
-    // smbusBusyCheck();
-    Debug("Transmit complete");
-
-    Debug("SMBus receiving...");
-    rc = HAL_SMBUS_Master_Receive_IT(&hsmbus1, ADDRESS, rx_data, 2, SMBUS_LAST_FRAME_NO_PEC);
-    if (rc != HAL_OK)
-    {
-        Debug("Failed to recieve smbus");
-    }
-    smbusBusyCheck();
-    Debug("Receive complete.");
-
-    uint16_t result = (uint16_t)rx_data[0] | ((uint16_t)rx_data[1] << 8);
-
-    Debug("Device returned: %04x", result);
+    SMBus_Setup();
 }
 
 void loop()
@@ -76,25 +22,88 @@ void loop()
 
 void mainFSM()
 {
+    static uint8_t state = 0;
+    static uint8_t desiredState = 0;
+
     switch (state)
     {
     case 0:
         if (key)
         {
-            // HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
-            smbusSendCommand();
-            state = 1;
+            SMBus_Status rc;
+            rc = SMBus_ReadWord(0x0B, 0x15, &charge_mv);
+            if (rc != SMBUS_OK)
+            {
+                HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
+            }
+            state = 2;
+            desiredState = 1;
             HAL_Delay(10);
         }
         break;
     case 1:
-        if (!key)
+        if (key)
         {
-            // HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
-            state = 0;
+            state = 2;
+            desiredState = 0;
+            HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
         }
         break;
+    case 2:
+        if (!key)
+        {
+            state = desiredState;
+        }
     default:
         break;
     }
 }
+
+// doesn't work?
+// uint8_t debounce(GPIO_TypeDef *port, uint16_t pin)
+// {
+//     static uint8_t state = 0;
+//     static uint32_t startTime = 0;
+
+//     switch (state)
+//     {
+//     case 0b00: // LOW
+//         if (HAL_GPIO_ReadPin(port, pin))
+//         {
+//             state = 0b10;
+//             startTime = HAL_GetTick();
+//         }
+//         break;
+//     case 0b11: // HIGH
+//         if (!HAL_GPIO_ReadPin(port, pin))
+//         {
+//             state = 0b01;
+//             startTime = HAL_GetTick();
+//         }
+//         break;
+//     case 0b10: // LOW TO HIGH TRANSITION
+//         if (HAL_GetTick() - startTime > DEBOUNCE)
+//         {
+//             state = 0b11;
+//         }
+//         if (!HAL_GPIO_ReadPin(port, pin))
+//         {
+//             state = 0b00;
+//         }
+//         break;
+//     case 0b01: // HIGH TO LOW TRANSITION
+//         if (HAL_GetTick() - startTime > DEBOUNCE)
+//         {
+//             state = 0b00;
+//         }
+//         if (!HAL_GPIO_ReadPin(port, pin))
+//         {
+//             state = 0b11;
+//         }
+//         break;
+//     default:
+//         break;
+//     }
+
+//     return state & 0b01;
+// }
