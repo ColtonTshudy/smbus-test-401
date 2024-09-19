@@ -11,7 +11,6 @@ typedef enum
     SMBUS_ERROR_DATA_NACK
 } SMBus_Status;
 
-#define SPEED 50000          // Hz
 #define SMBUS_TIMEOUT 840000 // clock cycles
 
 #define WAIT_FOR_FLAG(flag, error_code)   \
@@ -27,5 +26,6 @@ typedef enum
         }                                 \
     } while (0)
 
-void SMBus_Setup();
 SMBus_Status SMBus_ReadWord(uint8_t, uint8_t, uint16_t *);
+void SMBus_Incr_Speed();
+void SMBus_Set_Speed(uint32_t);

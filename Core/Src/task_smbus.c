@@ -1,12 +1,29 @@
-#include "smbus.h"
+#include "task_smbus.h"
 #include "main.h"
 
 extern I2C_HandleTypeDef hi2c1;
+uint32_t speed = 20000;
 
-void SMBus_Setup()
+void SMBus_Incr_Speed()
 {
     HAL_I2C_DeInit(&hi2c1);
-    hi2c1.Init.ClockSpeed = SPEED;
+    hi2c1.Init.ClockSpeed = speed;
+    if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    speed += 20000;
+
+    if (speed > 200000)
+    {
+        speed = 0;
+    }
+}
+
+void SMBus_Set_Speed(uint32_t newSpeed)
+{
+    HAL_I2C_DeInit(&hi2c1);
+    hi2c1.Init.ClockSpeed = newSpeed;
     if (HAL_I2C_Init(&hi2c1) != HAL_OK)
     {
         Error_Handler();

@@ -18,11 +18,12 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 // #include "usbd_cdc_if.h"
-#include "program.h"
+#include "task_program.h"
 
 /* USER CODE END Includes */
 
@@ -91,6 +92,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
   Debug("Hello USB!\r\n");
 
@@ -225,20 +227,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-/**
- * @brief Pipes printf to USB_CDC
- *
- * @param file
- * @param ptr
- * @param len
- * @return int
- */
-// int _write(int file, char *ptr, int len)
-// {
-//   (void)file;
-//   CDC_Transmit_FS((uint8_t *)ptr, len);
-//   return len;
-// }
+
 /* USER CODE END 4 */
 
 /**
@@ -249,7 +238,9 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
+  Task_USBD_DeInit();
   __disable_irq();
+  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
   while (1)
   {
   }

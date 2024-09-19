@@ -1,8 +1,8 @@
-#include "program.h"
-#include "smbus.h"
+#include "task_program.h"
 
 uint8_t key = 0;
 extern I2C_HandleTypeDef hi2c1;
+extern uint32_t speed; // smbus.c bus speed
 
 uint8_t tx_data[2] = {0, 0};
 uint8_t rx_data[2] = {0, 0};
@@ -11,7 +11,6 @@ uint16_t charge_mv = 0;
 
 void setup()
 {
-    SMBus_Setup();
 }
 
 void loop()
@@ -30,17 +29,11 @@ void mainFSM()
     case 0:
         if (key)
         {
-            SMBus_Status rc;
-            rc = SMBus_ReadWord(0x0B, 0x15, &charge_mv);
-            if (rc != SMBUS_OK)
-            {
-                HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
-            }
             state = 2;
-            desiredState = 1;
-            HAL_Delay(10);
+            desiredState = 3;
         }
         break;
+
     case 1:
         if (key)
         {
@@ -49,11 +42,27 @@ void mainFSM()
             HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
         }
         break;
+
     case 2:
         if (!key)
         {
             state = desiredState;
         }
+        break;
+
+    case 3:
+        if (SMBus_ReadWord(0x0B, 0x15, &charge_mv) != SMBUS_OK)
+        {
+            HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
+            state = 1;
+        }
+        SMBus_Incr_Speed();
+        if (speed == 0)
+        {
+            state = 1;
+        }
+        break;
+
     default:
         break;
     }
