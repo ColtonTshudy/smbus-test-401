@@ -11,6 +11,12 @@
         "dev_config.h": "c",
         "usb_device.h": "c",
         "usbd_cdc_if.h": "c",
-        "smbus.h": "c"
+        "smbus.h": "c",
+        "task_smbus.h": "c",
+        "task_program.h": "c",
+        "task_usb.h": "c",
+        "stdio.h": "c",
+        "stm32f4xx_hal.h": "c",
+        "stm32f4xx.h": "c"
     }
 }

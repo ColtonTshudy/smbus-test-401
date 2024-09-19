@@ -50,8 +50,9 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
-    ${CMAKE_HOME_DIRECTORY}/Core/Src/program.c
-    ${CMAKE_HOME_DIRECTORY}/Core/Src/smbus.c
+    ${CMAKE_HOME_DIRECTORY}/Core/Src/task_program.c
+    ${CMAKE_HOME_DIRECTORY}/Core/Src/task_smbus.c
+    ${CMAKE_HOME_DIRECTORY}/Core/Src/task_usb.c
 )
 
 # Add include paths
