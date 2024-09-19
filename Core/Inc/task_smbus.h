@@ -26,6 +26,9 @@ typedef enum
         }                                 \
     } while (0)
 
+SMBus_Status SMBus_ReadByte(uint8_t, uint8_t, uint8_t *);
 SMBus_Status SMBus_ReadWord(uint8_t, uint8_t, uint16_t *);
-void SMBus_Incr_Speed();
+SMBus_Status SMBus_BlockRead(uint8_t, uint8_t, uint8_t *, uint8_t *);
 void SMBus_Set_Speed(uint32_t);
+void SMBus_ReInit();
+SMBus_Status SMBus_GetStatus();

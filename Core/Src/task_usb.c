@@ -34,6 +34,10 @@ void ParseCommand(uint8_t *buf, uint32_t len)
     //-rb XEF
     else if (strncmp((char *)buf, "-rb", 3) == 0)
     {
+        uint8_t command = buf[4];
+        uint8_t data;
+        rc = SMBus_ReadByte(address, command, &data);
+        SendResponse(rc, &data, 1);
     }
     //-rw XEF
     else if (strncmp((char *)buf, "-rw", 3) == 0)
@@ -46,13 +50,18 @@ void ParseCommand(uint8_t *buf, uint32_t len)
     //-br XEF
     else if (strncmp((char *)buf, "-br", 3) == 0)
     {
+        uint8_t command = buf[4];
+        uint8_t data[33]; // length byte + 32 possible data bytes
+        uint8_t length = 0;
+        rc = SMBus_BlockRead(address, command, &data[1], &length);
+        data[0] = length;
+        SendResponse(rc, data, length + 1);
     }
     //-sa xEF
     else if (strncmp((char *)buf, "-sa", 3) == 0)
     {
         address = buf[4];
         rc = 0;
-
         SendResponse(rc, &address, 1); // "Success" response with no data
     }
     else if (strncmp((char *)buf, "-ss", 3) == 0)
@@ -69,7 +78,7 @@ void ParseCommand(uint8_t *buf, uint32_t len)
 
     if (rc != 0)
     {
-        Error_Handler();
+        // Error_Handler();
     }
 }
 

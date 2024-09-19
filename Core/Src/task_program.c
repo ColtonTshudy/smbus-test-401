@@ -27,39 +27,37 @@ void mainFSM()
     switch (state)
     {
     case 0:
-        if (key)
+        if (key) // manual fault trigger
         {
             state = 2;
-            desiredState = 3;
+            desiredState = 1;
+            HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
+        }
+        if (SMBus_GetStatus() != SMBUS_OK) // fault trigger
+        {
+            state = 1;
+            desiredState = 1;
+            HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
         }
         break;
 
     case 1:
-        if (key)
+        if (key) // manual fault reset
         {
             state = 2;
             desiredState = 0;
-            HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
         }
         break;
 
-    case 2:
+    case 2: // captures rising edge of keypress, switches state on falling edge
         if (!key)
         {
             state = desiredState;
-        }
-        break;
-
-    case 3:
-        if (SMBus_ReadWord(0x0B, 0x15, &charge_mv) != SMBUS_OK)
-        {
-            HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 0);
-            state = 1;
-        }
-        SMBus_Incr_Speed();
-        if (speed == 0)
-        {
-            state = 1;
+            if (desiredState == 0)
+            {
+                HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
+                SMBus_ReInit();
+            }
         }
         break;
 

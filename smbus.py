@@ -32,7 +32,7 @@ class STM32USBInterface:
         
         response = bytearray()
         
-        response = self._get_response(9999999999)
+        response = self._get_response(10)
         
         # return code byte, data byte(s)
         return response[0], response[1:]
@@ -41,7 +41,7 @@ class STM32USBInterface:
         """Get response with timeout in milliseconds"""
         response = bytearray()
 
-        self._debug(f'awaiting response with timeout {timeout/1000}s...')
+        self._debug(f'awaiting response with timeout {timeout}ms...')
         start_time = time.time()
         while 1:
             if (time.time() - start_time) > timeout/1000:  # 500ms timeout
@@ -104,7 +104,7 @@ if __name__ == "__main__":
         print(f"Success? {success==0}. Set address: {int.from_bytes(response, byteorder='little', signed=False):02X}")
 
         # Set speed
-        success, response = stm32.set_speed(50000)
+        success, response = stm32.set_speed(100000)
         print(f"Success? {success==0}. Set speed: {int.from_bytes(response, byteorder='little', signed=False)}")
 
         # # Write byte
@@ -115,17 +115,17 @@ if __name__ == "__main__":
         # success, response = stm32.write_word(0x472C)
         # print(f"Success? {success==0}. Write word: {response}")
 
-        # # Read byte
-        # success, response = stm32.read_byte()
-        # print(f"Success? {success==0}. Read byte: {response}")
+        # Read byte
+        success, response = stm32.read_byte(0x15)
+        print(f"Success? {success==0}. Read byte: {int.from_bytes(response, byteorder='little', signed=False)}")
 
         # Read word
         success, response = stm32.read_word(0x15)
         print(f"Success? {success==0}. Read word: {int.from_bytes(response, byteorder='little', signed=False)}")
 
-        # # Block read
-        # success, response = stm32.block_read(0x03)
-        # print(f"Success? {success==0}. Read multiple: {response}")
+        # Block read
+        success, response = stm32.block_read(0x20)
+        print(f"Success? {success==0}. Block length: {response[0]}. Block data: {response[1:]}")
         
     except KeyboardInterrupt:
         stm32.close()
